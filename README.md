@@ -1,13 +1,19 @@
-# desafio7-mongo-avanzado-oliver-zapata
+# desafio8--cookies-session-storage--oliver-zapata
 
 ## Pasos para ejecutarlo
 
 - Seleccionar el archivo app.js y abrir en terminal integrada (Es decir abrir la consola)
-- Instalar las dependencias ingresando en la consola: npm i express express-handlebars mongoose socket.io
+- Instalar las dependencias ingresando en la consola: npm i
 - Colocar el comando: node app.js estándo en la caperta src, si no se está en el carpeta src entonces colocar: node src/app.js
-- Abrir en el navegador las rutas http://localhost:8080/products y http://localhost:8080/carts/646b7bbcb035a38e23da5ad8
+- Abrir en el navegador las rutas http://localhost:8080 para abrir la página de registro
 
 ## Guía de rutas
+
+### http://localhost:8080 o http://localhost:8080/login
+En esta ruta se iniciará sesión en la página
+
+### http://localhost:8080/register
+En esta ruta se registrarán los datos del usuario
 
 ### http://localhost:8080/products
 En esta ruta se verán todos los productos con paginación con la opción de poder pasar algún producto al carrito, también se pueden ejecutar métodos post y put mediante alguna herramienta como postman y en el navegador se verán los cambios automáticamente mediante la implementación de sockets al método get que muestra la vista de esta ruta
@@ -24,6 +30,8 @@ En el archivo principal app.js usa 3 routers:
 app.use("/", viewsProductRouter);            (views.products.js)
 app.use("/api/products", productsRouter);    (products.router.js)
 app.use("/api/carts", cartsRouter);          (carts.router.js)
+app.use("/api/sessions", sessionsRouter);    (session.router.js)
+app.use("/", viewsLoginRouter);              (views.login.js)
 
 ### Métodos del router products.router.js
 ### (Los métodos este router solo se pueden ejecutar mediante postman)
@@ -94,3 +102,25 @@ Este método eliminará todos los productos de un carrito según su id
 ### Métodos del router views.products.js<br>
 ### (Los métodos este router solo se pueden en la web usando el navegador del lado del cliente)<br>
 Este router usa las rutas http://localhost:8080/products y http://localhost:8080/carts/646b7bbcb035a38e23da5ad8 específicadas en la guía de rutas
+
+### Métodos del router session.router.js<br>
+
+- Metódo POST (para registrarse)<br>
+http://localhost:8080/register (esta ruta es de la vista el método post de registro se encuentra en session.router.js como router.post '/register')<br>
+Con este método se envían los datos del usuario a la base de datos 
+
+- Metódo POST (para iniciar sesión)<br>
+http://localhost:8080 o http://localhost:8080/login (esta ruta es de la vista el método post de registro se encuentra en session.router.js como router.post '/login')<br>
+Para ingresar los datos de registro y redirigirte luego a la vista de productos (ahora con los datos del usuario incorporados)
+
+- Método POST (para cerrar sesión) <br>
+http://localhost:8080/api/sessions/logout <br>
+Para destruir la sesión (salirse de la sesión)
+
+### Métodos del router views.login.js<br>
+
+En este router se renderizan las vistas de registro y de login mostradas en las rutas anotadas del router session.router.js, solo que en session.router.js se encuentra la lógica para que el funcionamiento de esas vistas funcione
+
+
+
+
