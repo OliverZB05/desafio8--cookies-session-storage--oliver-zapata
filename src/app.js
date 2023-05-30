@@ -5,7 +5,6 @@ import exphbs from 'express-handlebars';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
-import bcrypt from 'bcrypt';
 //========={ Dependencias }=========
 
 //========={ Dirname }=========
@@ -52,11 +51,7 @@ app.set("view engine", "handlebars");
 
 app.set("view engine", "handlebars");
 app.use(express.static(__dirname+"/public"));
-/* app.use("/", viewsProductRouter);
-app.use("/api/products", productsRouter);
-app.use("/api/carts", cartsRouter);
-app.use("/api/sessions", sessionsRouter);
-app.use("/", viewsLoginRouter); */
+app.set('views', `${__dirname}/views`);
 
 let mongooseConnection;
 

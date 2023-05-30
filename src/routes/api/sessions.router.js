@@ -5,144 +5,84 @@ const router = Router();
 
 router.post('/register', async (req, res) => {
     try {
-        const { first_name, last_name, email, age, password } = req.body;
+        let { first_name, last_name, email, age, password } = req.body;
+        first_name = first_name.trim();
+        last_name = last_name.trim();
+        email = email.trim();
+        age = age.trim();
+        password = password.trim();
+
+        const missingFields = [];
+        if (!first_name) missingFields.push('nombre');
+        if (!last_name) missingFields.push('apellido');
+        if (!email) missingFields.push('correo');
+        if (!age) missingFields.push('edad');
+        if (!password) missingFields.push('contraseña');
+
+        if (missingFields.length > 0) {
+            const fields = missingFields.join(', ');
+            return res.status(400).send({ status: 'warning', warning: `Debes ingresar ${missingFields.length === 1 ? 'el' : 'los'} campo${missingFields.length === 1 ? '' : 's'} ${fields}` });
+        }
+
         const exists = await userModel.findOne({ email });
 
-        if (exists) return res.status(400).send({ status: 'error', error: 'User already exists' });
+        if (exists) return res.status(400).send({ status: 'warning', warning: 'Ya hay un usuario registrado con ese correo' });
+
+        let role;
+        if(email === "adminCoder@coder.com" && password === "adminCod3r123"){
+            role = "admin";
+        }
+        else {
+            role = "usuario";
+        }
 
         const user = {
             first_name,
             last_name,
             email,
             age,
-            password
+            password,
+            role
         }
 
         await userModel.create(user);
+
         res.send({ status: 'success', message: 'User registered' })
     } catch (error) {
         res.status(500).send({ status: 'error', error });
     }
 })
 
-/* router.post('/register', async (req, res) => {
-    try {
-        const { first_name, last_name, email, age, password } = req.body;
-        const exists = await userModel.findOne({ email });
-
-        if (exists) return res.status(400).send({ status: 'error', error: 'User already exists' });
-
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        const user = {
-            first_name,
-            last_name,
-            email,
-            age,
-            password: hashedPassword
-        }
-
-        await userModel.create(user);
-        res.send({ status: 'success', message: 'User registered' })
-    } catch (error) {
-        res.status(500).send({ status: 'error', error });
-    }
-}) */
-
-
 router.post('/login', async (req, res) => {
     try {
-        // await userModel.deleteMany({});
-        const { email, password } = req.body;
+        let { email, password } = req.body;
+        email = email.trim();
+        password = password.trim();
 
-        const user = await userModel.findOne({ email, password });
+        if (!email && !password) return res.status(400).send({ status: 'warning', warning: 'Debes ingresar tus datos para iniciar sesión' });
+        if (!email) return res.status(400).send({ status: 'warning', warning: 'Debes ingresar tu correo' });
+        if (!password) return res.status(400).send({ status: 'warning', warning: 'Debes ingresar la contraseña' });
 
-        if (!user) return res.status(400).send({ status: 'error', error: 'Incorrect credentials' });
+        const user = await userModel.findOne({ email });
+        const emailExists = await userModel.exists({ email });
+
+        if (!emailExists) return res.status(400).send({ status: 'error', error: 'El correo que ingresaste no coincide con ningún usuario registrado' });
+        if (!user) return res.status(400).send({ status: 'error', error: 'Contraseña incorrecta' });
 
         req.session.user = {
             name: `${user.first_name} ${user.last_name}`,
             email: user.email,
-            age: user.age
+            age: user.age,
+            password: user.password,
+            role: user.role
         }
 
         res.redirect('/products');
-        /* res.send({ status: 'success', message: 'Login success' }) */
     } catch (error) {
         res.status(500).send({ status: 'error', error });
         console.log(error);
     }
 });
-
-/* router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        console.log(`Email: ${email}, Password: ${password}`); // Verifica si las variables email y password están definidas correctamente
-        const user = await userModel.findOne({ email, password });
-        console.log(`User: ${user}`); // Verifica si se encontró un usuario en la base de datos
-        if (!user) return res.status(400).send({ status: 'error', error: 'Incorrect credentials' });
-        req.session.user = {
-            name: `${user.first_name} ${user.last_name}`,
-            email: user.email,
-            age: user.age
-        }
-        res.redirect('/products');
-    } catch (error) {
-        console.log(error); // Muestra el error en la consola del servidor
-        res.status(500).send({ status: 'error', error });
-    }
-}); */
-
-
-/* router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        const user = await userModel.findOne({ email, password });
-        console.log(`User: ${user}`);
-        console.log(`UserModel: ${userModel}`);
-        console.log(`Email: ${email}`);
-        console.log(`Password: ${password}`);
-
-        if (!user) return res.status(400).send({ status: 'error', error: 'Incorrect credentials' });
-
-        req.session.user = {
-            name: `${user.first_name} ${user.last_name}`,
-            email: user.email,
-            age: user.age
-        }
-        // console.log(`Session user: ${req.session.user}`); // Verifica si se está estableciendo correctamente la información del usuario en la sesión
-
-        // res.redirect('/products');
-        res.send({ status: 'success', message: 'Login success' })
-    } catch (error) {
-        res.status(500).send({ status: 'error', error });
-        console.log(error);
-    }
-}); */
-
-/* router.post('/login', async (req, res) => {
-    try {
-        // await userModel.deleteMany({});
-        const { email, password } = req.body;
-
-        const user = await userModel.findOne({ email });
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(400).send({ status: 'error', error: 'Incorrect credentials' });
-        }
-
-        req.session.user = {
-            name: `${user.first_name} ${user.last_name}`,
-            email: user.email,
-            age: user.age
-        }
-    
-        res.send({ status: 'success', message: 'Login success' })
-    } catch (error) {
-        res.status(500).send({ status: 'error', error });
-    }
-}); */
-
 
 
 router.get('/logout', (req, res) => {

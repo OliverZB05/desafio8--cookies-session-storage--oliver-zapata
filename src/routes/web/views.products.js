@@ -25,22 +25,10 @@ router.get("/products", async (req, res) => {
     const limit = parseInt(req.query.limit) || 3;
 
     const data = await getProducts(page, limit);
+    data.user = req.session.user;
 
     res.render("products", data);
 });
-
-/* router.get("/products", async (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 3;
-
-    const data = await getProducts(page, limit);
-
-    res.render("products", {
-        user: req.session.user,
-        ...data
-    });
-}); */
-
 
 async function getCart(cartId, page = 1, limit = 3) {
     const skip = (page - 1) * limit;
